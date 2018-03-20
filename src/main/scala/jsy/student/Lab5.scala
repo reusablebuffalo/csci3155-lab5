@@ -9,7 +9,7 @@ object Lab5 extends jsy.util.JsyApplication with Lab5Like {
 
   /*
    * CSCI 3155: Lab 5
-   * <Your Name>
+   * Ian Smith
    *
    * Partner: <Your Partner's Name>
    * Collaborators: <Any Collaborators>
