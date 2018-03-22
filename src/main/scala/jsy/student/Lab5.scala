@@ -82,9 +82,9 @@ object Lab5 extends jsy.util.JsyApplication with Lab5Like {
 
   def myuniquify(e: Expr): Expr = {
     val fresh: String => DoWith[Int,String] = { _ =>
-      ???
+      doget[Int] flatMap {(i) => val xp = "x" + i.toString; doput(i+1) map { _ => xp }} // (w) => (w,w) // still a problem here, int needs to be changed
     }
-    val (_, r) = rename(empty, e)(fresh)(???)
+    val (_, r) = rename(empty, e)(fresh)(0)
     r
   }
 
@@ -92,22 +92,27 @@ object Lab5 extends jsy.util.JsyApplication with Lab5Like {
 
   // List map with an operator returning a DoWith
   def mapWith[W,A,B](l: List[A])(f: A => DoWith[W,B]): DoWith[W,List[B]] = {
-    l.foldRight[DoWith[W,List[B]]]( ??? ) {
-      ???
+    l.foldRight[DoWith[W,List[B]]]( doreturn(Nil) ) { //
+      case (a,dwbs) => dwbs flatMap {(bs:List[B]) => (f(a):DoWith[W,B]).map((b) => b :: bs)}// (w) => (w, f(a))
+      // dwbs is our accumulator, flat map takes f : R => DoWith[W,R] , map takes f: R => B.
+      // so we want to take our accumulated DoWith[W,List[B]] and map List[B] to List[f(a) :: List[B]]
     }
   }
 
   // Map map with an operator returning a DoWith
   def mapWith[W,A,B,C,D](m: Map[A,B])(f: ((A,B)) => DoWith[W,(C,D)]): DoWith[W,Map[C,D]] = {
-    m.foldRight[DoWith[W,Map[C,D]]]( ??? ) {
-      ???
+   m.foldRight[DoWith[W,Map[C,D]]]( doreturn(Map()) ) {
+      case (a, dwmap) => dwmap flatMap{ (currmap) => f(a) map {(cd) => currmap + (cd._1 -> cd._2)}}
     }
   }
 
   // Just like mapFirst from Lab 4 but uses a callback f that returns a DoWith in the Some case.
   def mapFirstWith[W,A](l: List[A])(f: A => Option[DoWith[W,A]]): DoWith[W,List[A]] = l match {
-    case Nil => ???
-    case h :: t => ???
+    case Nil => doreturn(l) //
+    case h :: t => f(h) match {
+      case None => mapFirstWith(t)(f) map { (ft) => h :: ft}
+      case Some(fh) => fh map { (fh) => fh :: t}
+    }
   }
 
   // There are better ways to deal with the combination of data structures like List, Map, and
