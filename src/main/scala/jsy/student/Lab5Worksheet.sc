@@ -37,3 +37,23 @@ val aliasingex = parse("""
   console.log(y.f)
 """)
 //iterateStep(aliasingex) // uncomment when you are ready to test your step function.
+import jsy.util._
+import jsy.util.DoWith._
+
+val d0:DoWith[String, Unit] = doput("Fooo")
+val d1:DoWith[Int, Int] = doget
+d0("Cow")
+d1(98)
+
+val d2 = d0 flatMap((x) => doget: DoWith[String, String])
+d2("lajsdf")
+val d3 = d0.flatMap((x) => doget: DoWith[String, String]).map((x) => x + "!")
+d3("test")
+// doget, doput messes with state (W)
+// doreturn messes with R
+val d4 :DoWith[String, Int] = doreturn(15)
+d4("")
+
+// do modify takes in an argument that is a function modifying the state return DoWith[W, Unit]
+val d5 : DoWith[String ,Unit] = domodify((w) => w + "!!")
+d5("hats")

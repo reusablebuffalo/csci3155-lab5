@@ -34,6 +34,11 @@ class Lab5Spec(lab5: Lab5Like) extends FlatSpec {
       dw(1)
     }
   }
+  "mapWith (Map)" should "map the elements of a map in a DoWith" in {
+    val mmap = Map("a" -> 1, "b" -> 2, "c" -> 3)
+    def dowith2[W] :DoWith[W, Map[String,Int]] = mapWith(mmap){ case (c,d) => doreturn((c+c, 2*d))}
+    assertResult((true, Map("aa" -> 2, "bb" -> 4, "cc" -> 6))) { dowith2(true)}
+  }
 
   "rename" should "rename in a DoWith" in {
     val e1 = parse("const a = 1 + a; a")
