@@ -123,6 +123,8 @@ object Lab5 extends jsy.util.JsyApplication with Lab5Like {
   def castOk(t1: Typ, t2: Typ): Boolean = (t1, t2) match {
       /***** Make sure to replace the case _ => ???. */
     //case _ => ???
+    case (TNull, TObj(_)) => true
+    case (TObj(_), TNull) => true
       /***** Cases for the extra credit. Do not attempt until the rest of the assignment is complete. */
     case (TInterface(tvar, t1p), _) => ???
     case (_, TInterface(tvar, t2p)) => ???
