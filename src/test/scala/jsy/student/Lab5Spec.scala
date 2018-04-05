@@ -58,6 +58,15 @@ class Lab5Spec(lab5: Lab5Like) extends FlatSpec {
     val ep = Decl(MConst, "a0", e1p, e2p)
     assertResult(ep) { uniquify(e) }
   }
+/*  "myuniquify" should "uniquify with a counter for each variable" in {
+    val e1 = parse("const a = function(a: number,b :number,c :number) :number { return a + b + c}; a")
+    val e1p = parse("const a1 = 1; a1")
+    val e2 = parse("const b = 2; b")
+    val e2p = parse("const b0 = 2; b0")
+    val e = Decl(MConst, "a", e1, e2)
+    val ep = Decl(MConst, "a0", e1p, e2p)
+    assertResult(ep) { myuniquify(e) }
+  }*/
 
 
   /* Tests based on rules */

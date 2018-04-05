@@ -53,26 +53,31 @@ object Lab5 extends jsy.util.JsyApplication with Lab5Like {
 
       case Function(p, params, retty, e1) => {
         val w: DoWith[W,(Option[String], Map[String,String])] = p match {
-          case None => ???
-          case Some(x) => ???
+          case None => doreturn((None, env))
+          case Some(x) => fresh(x) map ( xp => (Some(xp), env + (x -> xp)))
         }
         w flatMap { case (pp, envp) =>
           params.foldRight[DoWith[W,(List[(String,MTyp)],Map[String,String])]]( doreturn((Nil, envp)) ) {
             case ((x,mty), acc) => acc flatMap {
-              ???
+              case (ll, accenv) =>  fresh(x) map (xp => ((xp, mty) :: ll, accenv + (x -> xp))) // extend ll and map
             }
-          } flatMap {
-            ???
+          } flatMap { // now sub in name
+            case (paramsp, envpp) => ren(envpp, e1) map (e1p => Function(pp, paramsp, retty, e1p))
           }
         }
       }
 
-      case Call(e1, args) => ???
+      /*case Call(e1, args) => Call(ren(env,e1), args map {case (ei) => ren(env,ei)} )
 
-      case Obj(fields) => ???
-      case GetField(e1, f) => ???
+      case Obj(fields) => Obj(fields mapValues( (ei) => ren(env,ei)))
+      case GetField(e1, f) => GetField(ren(env, e1), f)*/
 
-      case Assign(e1, e2) => ???
+      case Call(e1, args) => ren(env, e1) flatMap( e1p => mapWith(args)(ei => ren(env, ei)) map (argsp => Call(e1p, argsp)))
+
+      case Obj(fields) => mapWith(fields)(ei => ren(env,ei._2) map (exp => (ei._1, exp))) map (newfields => Obj(newfields)) // map field values
+      case GetField(e1, f) => ren(env, e1) map (e1p => GetField(e1p, f))
+
+      case Assign(e1, e2) => ren(env, e1) flatMap (e1p => ren(env,e2) map (e2p => Assign(e1p, e2p))) // just rename e1 and e2
 
       /* Should not match: should have been removed */
       case InterfaceDecl(_, _, _) => throw new IllegalArgumentException("Gremlins: Encountered unexpected expression %s.".format(e))
