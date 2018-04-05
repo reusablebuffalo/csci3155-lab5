@@ -57,3 +57,7 @@ d4("")
 // do modify takes in an argument that is a function modifying the state return DoWith[W, Unit]
 val d5 : DoWith[String ,Unit] = domodify((w) => w + "!!")
 d5("hats")
+
+val map1 = Map("a" -> 2, "b" -> 3, "c" -> 4)
+val map2 = Map("a" ->3)
+map2.toSet subsetOf map1.toSet

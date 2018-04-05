@@ -128,8 +128,13 @@ object Lab5 extends jsy.util.JsyApplication with Lab5Like {
   def castOk(t1: Typ, t2: Typ): Boolean = (t1, t2) match {
       /***** Make sure to replace the case _ => ???. */
     //case _ => ???
-    case (TNull, TObj(_)) => true
-    case (TObj(_), TNull) => true
+    case (t11, t22) if t11 == t22 => true
+    case (TNull, TObj(_)) => true // we can cast null to any obj
+    case (TObj(tfields1), TObj(tfields2)) => // one must be subset of the other
+      if (tfields2.toSet subsetOf tfields2.toSet) true // t2 is subset of t1
+        else if (tfields1.toSet subsetOf tfields2.toSet) true // t1 is subset of t2
+          else false
+    //case _ => false // else false
       /***** Cases for the extra credit. Do not attempt until the rest of the assignment is complete. */
     case (TInterface(tvar, t1p), _) => ???
     case (_, TInterface(tvar, t2p)) => ???
