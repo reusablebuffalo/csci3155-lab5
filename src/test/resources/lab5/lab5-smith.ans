@@ -1,0 +1,54 @@
+## type Decl(MConst,f,Function(None,List((x,MTyp(MConst,TObj(Map(x -> TNumber, y -> TNumber))))),Some(TNumber),Binary(Plus,GetField(Var(x),x),GetField(Var(x),y))),Decl(MConst,a,Obj(Map(x -> N(3.0), y -> N(4.0))),Decl(MVar,b,Call(Var(f),List(Var(a))),Binary(Seq,Assign(Var(b),Binary(Plus,Var(b),N(1.0))),Binary(Seq,Print(Var(b)),Var(b)))))) : number
+## step    0:
+##  Map()
+##  Decl(MConst,f,Function(None,List((x,MTyp(MConst,TObj(Map(x -> TNumber, y -> TNumber))))),Some(TNumber),Binary(Plus,GetField(Var(x),x),GetField(Var(x),y))),Decl(MConst,a,Obj(Map(x -> N(3.0), y -> N(4.0))),Decl(MVar,b,Call(Var(f),List(Var(a))),Binary(Seq,Assign(Var(b),Binary(Plus,Var(b),N(1.0))),Binary(Seq,Print(Var(b)),Var(b))))))
+## step    1:
+##  Map()
+##  Decl(MConst,a,Obj(Map(y -> N(4.0), x -> N(3.0))),Decl(MVar,b,Call(Function(None,List((x,MTyp(MConst,TObj(Map(x -> TNumber, y -> TNumber))))),Some(TNumber),Binary(Plus,GetField(Var(x),x),GetField(Var(x),y))),List(Var(a))),Binary(Seq,Assign(Var(b),Binary(Plus,Var(b),N(1.0))),Binary(Seq,Print(Var(b)),Var(b)))))
+## step    2:
+##  Map(A(1) -> Obj(Map(y -> N(4.0), x -> N(3.0))))
+##  Decl(MConst,a,A(1),Decl(MVar,b,Call(Function(None,List((x,MTyp(MConst,TObj(Map(x -> TNumber, y -> TNumber))))),Some(TNumber),Binary(Plus,GetField(Var(x),x),GetField(Var(x),y))),List(Var(a))),Binary(Seq,Assign(Var(b),Binary(Plus,Var(b),N(1.0))),Binary(Seq,Print(Var(b)),Var(b)))))
+## step    3:
+##  Map(A(1) -> Obj(Map(y -> N(4.0), x -> N(3.0))))
+##  Decl(MVar,b,Call(Function(None,List((x,MTyp(MConst,TObj(Map(x -> TNumber, y -> TNumber))))),Some(TNumber),Binary(Plus,GetField(Var(x),x),GetField(Var(x),y))),List(A(1))),Binary(Seq,Assign(Var(b),Binary(Plus,Var(b),N(1.0))),Binary(Seq,Print(Var(b)),Var(b))))
+## step    4:
+##  Map(A(1) -> Obj(Map(y -> N(4.0), x -> N(3.0))))
+##  Decl(MVar,b,Binary(Plus,GetField(A(1),x),GetField(A(1),y)),Binary(Seq,Assign(Var(b),Binary(Plus,Var(b),N(1.0))),Binary(Seq,Print(Var(b)),Var(b))))
+## step    5:
+##  Map(A(1) -> Obj(Map(y -> N(4.0), x -> N(3.0))))
+##  Decl(MVar,b,Binary(Plus,N(3.0),GetField(A(1),y)),Binary(Seq,Assign(Var(b),Binary(Plus,Var(b),N(1.0))),Binary(Seq,Print(Var(b)),Var(b))))
+## step    6:
+##  Map(A(1) -> Obj(Map(y -> N(4.0), x -> N(3.0))))
+##  Decl(MVar,b,Binary(Plus,N(3.0),N(4.0)),Binary(Seq,Assign(Var(b),Binary(Plus,Var(b),N(1.0))),Binary(Seq,Print(Var(b)),Var(b))))
+## step    7:
+##  Map(A(1) -> Obj(Map(y -> N(4.0), x -> N(3.0))))
+##  Decl(MVar,b,N(7.0),Binary(Seq,Assign(Var(b),Binary(Plus,Var(b),N(1.0))),Binary(Seq,Print(Var(b)),Var(b))))
+## step    8:
+##  Map(A(1) -> Obj(Map(y -> N(4.0), x -> N(3.0))), A(2) -> N(7.0))
+##  Binary(Seq,Assign(Unary(Deref,A(2)),Binary(Plus,Unary(Deref,A(2)),N(1.0))),Binary(Seq,Print(Unary(Deref,A(2))),Unary(Deref,A(2))))
+## step    9:
+##  Map(A(1) -> Obj(Map(y -> N(4.0), x -> N(3.0))), A(2) -> N(7.0))
+##  Binary(Seq,Assign(Unary(Deref,A(2)),Binary(Plus,N(7.0),N(1.0))),Binary(Seq,Print(Unary(Deref,A(2))),Unary(Deref,A(2))))
+## step   10:
+##  Map(A(1) -> Obj(Map(y -> N(4.0), x -> N(3.0))), A(2) -> N(7.0))
+##  Binary(Seq,Assign(Unary(Deref,A(2)),N(8.0)),Binary(Seq,Print(Unary(Deref,A(2))),Unary(Deref,A(2))))
+## step   11:
+##  Map(A(1) -> Obj(Map(y -> N(4.0), x -> N(3.0))), A(2) -> N(8.0))
+##  Binary(Seq,N(8.0),Binary(Seq,Print(Unary(Deref,A(2))),Unary(Deref,A(2))))
+## step   12:
+##  Map(A(1) -> Obj(Map(y -> N(4.0), x -> N(3.0))), A(2) -> N(8.0))
+##  Binary(Seq,Print(Unary(Deref,A(2))),Unary(Deref,A(2)))
+## step   13:
+##  Map(A(1) -> Obj(Map(y -> N(4.0), x -> N(3.0))), A(2) -> N(8.0))
+##  Binary(Seq,Print(N(8.0)),Unary(Deref,A(2)))
+8.0
+## step   14:
+##  Map(A(1) -> Obj(Map(y -> N(4.0), x -> N(3.0))), A(2) -> N(8.0))
+##  Binary(Seq,Undefined,Unary(Deref,A(2)))
+## step   15:
+##  Map(A(1) -> Obj(Map(y -> N(4.0), x -> N(3.0))), A(2) -> N(8.0))
+##  Unary(Deref,A(2))
+## result:
+##  Map(A(1) -> Obj(Map(y -> N(4.0), x -> N(3.0))), A(2) -> N(8.0))
+##  N(8.0)
+8.0
