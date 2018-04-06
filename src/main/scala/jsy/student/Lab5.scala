@@ -508,27 +508,34 @@ object Lab5 extends jsy.util.JsyApplication with Lab5Like {
         case _ => doreturn(v1)
       }
       case Assign(Unary(Deref, a @ A(_)), v) if isValue(v) =>
-        domodify[Mem] { m => ??? } map { _ => ??? }
+        domodify[Mem] { m => m + (a -> v) } map { _ => v } // update memory and then change result
 
       case Assign(GetField(a @ A(_), f), v) if isValue(v) =>
-        ???
+        domodify[Mem] {
+          m => m(a) match {
+            // it must be an object otherwise we can't do the getfield and assign
+            case Obj(fields) => m + (a -> Obj(fields + ((f,v))))  // update map with pointing a to this updated object
+            case _=> throw StuckError(e)
+          }
+        } map { _ => v } // update result to v
 
-      case Call(v @ Function(p, params, _, e), args) => {
+      case Call(v @ Function(p, params, _, e), args) => { // is Function
         val pazip = params zip args
-        if (???) {
-          val dwep = pazip.foldRight( ??? : DoWith[Mem,Expr] )  {
-            case (((xi, MTyp(mi, _)), ei), dwacc) => ???
+        if (pazip forall{  case ((_, MTyp(m,_)), arg) => !isRedex(m, arg)}) {
+          val dwep = pazip.foldRight( doreturn(e) : DoWith[Mem,Expr] )  {
+            case (((xi, MTyp(mi, _)), ei), dwacc) => getBinding(mi, ei) flatMap { eip => dwacc map { ep => substitute(ep, eip, xi)}}
           }
           p match {
-            case None => ???
-            case Some(x) => ???
+            case None => dwep
+            case Some(x) => dwep map { epp => substitute(epp, v, x)}
           }
         }
         else {
           val dwpazipp = mapFirstWith(pazip) {
-            ???
+            case (param@(_: String, MTyp(m, _)), arg: Expr) if isRedex(m, arg) => Some(step(arg) map {argp => (param, argp)}) // map first reducible arg
+            case _ => None
           }
-          ???
+          dwpazipp map {pa => Call(v,pa.unzip._2)} // searchCall2 with updated args
         }
       }
 
@@ -548,15 +555,19 @@ object Lab5 extends jsy.util.JsyApplication with Lab5Like {
       case If(e1, e2, e3) => step(e1) map {e1p => If(e1p, e2, e3)} // e1 is not a value (wouldve been caught earlier)
 
         /***** Cases needing adapting from Lab 4 */
+      // Search GetField
       case GetField(e1, f) =>
-        ???
+        step(e1) map {e1p => GetField(e1p, f)}
+      // SearchObj
       case Obj(fields) =>
-        ???
-
+        fields find {f => !isValue(f._2)} match { // find first key that doesn't map to value
+          case Some((fi,ei)) => step(ei) map {eip => Obj(fields + (fi -> eip))}
+        }
         // search Decl
       case Decl(mode, x, e1, e2) => step(e1) map {e1p => Decl(mode, x, e1p, e2)} // is Redex == true
+      // searchCall1
       case Call(e1, args) =>
-        ???
+        step(e1) map {e1p => Call(e1p, args)} // step e1 if not Function
 
         /***** New cases for Lab 5.  */
       case Assign(e1, e2) if ??? =>
