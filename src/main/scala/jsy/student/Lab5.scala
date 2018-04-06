@@ -127,11 +127,10 @@ object Lab5 extends jsy.util.JsyApplication with Lab5Like {
 
   def castOk(t1: Typ, t2: Typ): Boolean = (t1, t2) match {
       /***** Make sure to replace the case _ => ???. */
-    //case _ => ???
     case (t11, t22) if t11 == t22 => true
     case (TNull, TObj(_)) => true // we can cast null to any obj
     case (TObj(tfields1), TObj(tfields2)) => // one must be subset of the other
-      if (tfields2.toSet subsetOf tfields2.toSet) true // t2 is subset of t1
+      if (tfields2.toSet subsetOf tfields1.toSet) true // t2 is subset of t1
         else if (tfields1.toSet subsetOf tfields2.toSet) true // t1 is subset of t2
           else false
     //case _ => false // else false
@@ -221,19 +220,19 @@ object Lab5 extends jsy.util.JsyApplication with Lab5Like {
         case (tgot, _, _) => err(tgot, e1) // maybe not necessary
       }
 
-      case Obj(fields) => fields foreach {(ei) => typeof(env,ei._2)}; TObj(fields mapValues { (ei) => typeof(env, ei)}) // catch error, else map
+      case Obj(fields) => TObj(fields map { case (fi,ei) => (fi,typeof(env, ei))}) // catch error, else map
 
       case GetField(e1, f) =>  typeof(env,e1) match { // get type of e1
-        case TObj(tfields) => tfields.get(f) match {// e1 must be an obj
-          case Some(value) => value // type of that field
+        case TObj(tfields) => tfields get (f) match {// e1 must be an obj
+          case Some(tgot) => tgot // type of that field
           case None => err(TObj(tfields), e1) // error
         }
         case tgot => err(tgot, e1) // anything besides object type
       }
 
         /***** Cases from Lab 4 that need a small amount of adapting. */
-      case Decl(m, x, e1, e2) => val t1 = typeof(extend(env, x,  MTyp(m, typeof(env, e1))), e2)
-          if (isBindex(m, e1)) t1 else err(t1, e1)
+      case Decl(m, x, e1, e2) => val t2 = typeof(extend(env, x,  MTyp(m, typeof(env, e1))), e2)
+          if (isBindex(m, e1)) t2 else err(t2, e1)
       case Function(p, params, tann, e1) => {
         // Bind to env1 an environment that extends env with an appropriate binding if
         // the function is potentially recursive.
@@ -274,17 +273,17 @@ object Lab5 extends jsy.util.JsyApplication with Lab5Like {
       }
 
         /***** New cases for Lab 5. ***/
-      case Assign(Var(x), e1) => lookup(env, x) match {
+      case Assign(Var(x), e1) => env(x) match {
         case MTyp(m,t) => m match {
           case (MVar | MRef) => typeof(env, e1) match {
             case tgot => if (tgot == t) t else err(tgot, e1)
           }
-          case _ => ???
+          case _ => err(t, e)
         }
-        case _ => ???
+        case _  => ???
       }
       case Assign(GetField(e1, f), e2) => typeof(env, e1) match {
-        case TObj(fields) => val t1 = lookup(fields, f); if (t1 == typeof(env,e2)) t1 else err(t1, e1)
+        case TObj(fields) => val t1 = fields(f); if (t1 == typeof(env,e2)) t1 else err(t1, e1)
         case tgot => err(tgot, e1)
       }
 
