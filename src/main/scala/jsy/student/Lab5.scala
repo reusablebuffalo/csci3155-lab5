@@ -562,17 +562,19 @@ object Lab5 extends jsy.util.JsyApplication with Lab5Like {
         fields find {f => !isValue(f._2)} match { // find first key that doesn't map to value
           case Some((fi,ei)) => step(ei) map {eip => Obj(fields + (fi -> eip))}
         }
-        // search Decl
+        // searchDecl
       case Decl(mode, x, e1, e2) => step(e1) map {e1p => Decl(mode, x, e1p, e2)} // is Redex == true
       // searchCall1
       case Call(e1, args) =>
         step(e1) map {e1p => Call(e1p, args)} // step e1 if not Function
 
         /***** New cases for Lab 5.  */
-      case Assign(e1, e2) if ??? =>
-        ???
+        // SearchAssign1
+      case Assign(e1, e2) if !isLValue(e1) => //e1 not a location value
+        step(e1) map {e1p => Assign(e1p, e2)} // step e1
+        // SearchAssign2
       case Assign(e1, e2) =>
-        ???
+        step(e2) map {e2p => Assign(e1, e2p)} // step e2
 
       /* Everything else is a stuck error. */
       case _ => throw StuckError(e)
