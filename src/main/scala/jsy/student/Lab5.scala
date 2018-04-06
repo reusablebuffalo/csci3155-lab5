@@ -11,7 +11,7 @@ object Lab5 extends jsy.util.JsyApplication with Lab5Like {
    * CSCI 3155: Lab 5
    * Ian Smith
    *
-   * Partner: <Your Partner's Name>
+   * Partner: Kylee Bennett
    * Collaborators: <Any Collaborators>
    */
 
@@ -369,7 +369,7 @@ object Lab5 extends jsy.util.JsyApplication with Lab5Like {
     def myrename(e: Expr): Expr = {
       val fvs = freeVars(esub)
       def fresh(x: String): String = if (fvs contains x) fresh(x + "$") else x
-      rename[Unit](e)(0){ x => doreturn(fresh(x)) }
+      rename[Unit](e)(){x => doreturn(fresh(x))} // unit env, and function is x => doWith[Unit, fresh(x)]
     }
 
     subst(myrename(e))
@@ -402,12 +402,7 @@ object Lab5 extends jsy.util.JsyApplication with Lab5Like {
       /* Base Cases: Do Rules */
       case Print(v1) if isValue(v1) => doget map { m => println(pretty(m, v1)); Undefined }
         /***** Cases needing adapting from Lab 3. */
-      /*case Unary(Neg, v1) if isValue(v1) => doget map { _ =>
-        v1 match {
-          case N(n1) => N(-n1)
-          case _ => throw StuckError(e)
-        }
-      }*/
+
       case Unary(Neg, v1) if isValue(v1) => v1 match {
         case N(n1) => doreturn( N(-n1))
         case _ => throw StuckError(e)
