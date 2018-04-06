@@ -167,39 +167,42 @@ object Lab5 extends jsy.util.JsyApplication with Lab5Like {
     def err[T](tgot: Typ, e1: Expr): T = throw StaticTypeError(tgot, e1, e)
 
     e match {
-      case Print(e1) => typeof(env, e1); TUndefined
-      case N(_) => TNumber
-      case B(_) => TBool
-      case Undefined => TUndefined
-      case S(_) => TString
-      case Var(x) => val MTyp(m,t) = lookup(env, x); t
-      case Unary(Neg, e1) => typeof(env, e1) match {
+      case Print(e1) => typeof(env, e1); TUndefined // TypePrint
+      case N(_) => TNumber // TypeNumber
+      case B(_) => TBool // TypeBool
+      case Undefined => TUndefined // TypeUndefined
+      case S(_) => TString // TypeString
+      case Var(x) => val MTyp(m,t) = lookup(env, x); t // TypeVar
+      case Unary(Neg, e1) => typeof(env, e1) match { // TypeNeg
         case TNumber => TNumber
         case tgot => err(tgot, e1)
       }
         /***** Cases directly from Lab 4. We will minimize the test of these cases in Lab 5. */
-      case Unary(Not, e1) => typeof(env, e1) match {
+      case Unary(Not, e1) => typeof(env, e1) match { // TypeNot
         case TBool => TBool
         case tgot => err(tgot, e1) // if we didn't get bool through error
       }
       case Binary(Plus, e1, e2) => (typeof(env,e1), typeof(env,e2)) match {
-        case (TNumber,TNumber) => TNumber
-        case (TString, TString) => TString
+        case (TNumber,TNumber) => TNumber // TypeArith
+        case (TString, TString) => TString // TypePlusString
         case (TNumber|TString,tgot) => err(tgot, e2)
         case (tgot, TString|TNumber) => err(tgot,e1)
         case (tgot1, _) => err(tgot1, e1) // this is correct (trial and error)
       }
+        // TypeArith
       case Binary(Minus|Times|Div, e1, e2) => (typeof(env ,e1), typeof(env,e2)) match {
         case (TNumber, TNumber) => TNumber
         case (tgot,TNumber) => err(tgot,e1)
         case (TNumber, tgot) => err(tgot, e2)
         case (tgot,_)=> err(tgot,e1)
       }
+        // TypeEquality
       case Binary(Eq|Ne, e1, e2) => (typeof(env,e1), typeof(env,e2)) match {
         case (t1, _) if hasFunctionTyp(t1) => err(t1,e1)
         case (_, t2) if hasFunctionTyp(t2) => err(t2, e2)
         case (t1, t2) => if (t1 == t2) TBool else err(t2, e2)
       }
+        //TypeInEqualityNumber and TypeInequalityString
       case Binary(Lt|Le|Gt|Ge, e1, e2) => (typeof(env,e1), typeof(env,e2)) match {
         case (TNumber,TNumber) => TBool
         case (TString, TString) => TBool
@@ -207,23 +210,26 @@ object Lab5 extends jsy.util.JsyApplication with Lab5Like {
         case (tgot, TString|TNumber) => err(tgot,e1)
         case (tgot1, _) => err(tgot1, e1)
       }
+        // TypeAndOr
       case Binary(And|Or, e1, e2) => (typeof(env,e1),typeof(env,e2)) match {
         case (TBool, TBool) => TBool
         case (TBool, tgot) => err(tgot, e2)
         case (tgot,_) => err(tgot, e1)
       }
+        // TypeSeq
       case Binary(Seq, e1, e2) => (typeof(env,e1), typeof(env,e2)) match {
         case (_ , t2) => t2
       }
+        // TypeIf
       case If(e1, e2, e3) => (typeof(env,e1), typeof(env,e2), typeof(env,e3)) match {
         case (TBool, t1, t2)  => if(t1 == t2) t1 else err(t2,e2) // if it doesn't match the first
         case (tgot, _, _) => err(tgot, e1) // maybe not necessary
       }
-
+        // TypeObj
       case Obj(fields) => TObj(fields map { case (fi,ei) => (fi,typeof(env, ei))}) // catch error, else map
-
+        // TypeGetField
       case GetField(e1, f) =>  typeof(env,e1) match { // get type of e1
-        case TObj(tfields) => tfields get (f) match {// e1 must be an obj
+        case TObj(tfields) => tfields get f match {// e1 must be an obj
           case Some(tgot) => tgot // type of that field
           case None => err(TObj(tfields), e1) // error
         }
@@ -231,15 +237,18 @@ object Lab5 extends jsy.util.JsyApplication with Lab5Like {
       }
 
         /***** Cases from Lab 4 that need a small amount of adapting. */
+        // TypeDecl
       case Decl(m, x, e1, e2) => val t2 = typeof(extend(env, x,  MTyp(m, typeof(env, e1))), e2)
           if (isBindex(m, e1)) t2 else err(t2, e1)
+
       case Function(p, params, tann, e1) => {
         // Bind to env1 an environment that extends env with an appropriate binding if
         // the function is potentially recursive.
+        // TypeFunction
         val env1 = (p, tann) match {
-          case (Some(f), Some(tret)) =>
+          case (Some(f), Some(tret)) => //TypeRecFunction
             val tprime = TFunction(params, tret)  // if function has a name, it can be recursive
-            extend(env, f, MTyp(MConst,tprime))
+            extend(env, f, MTyp(MConst,tprime)) // TypeFunction
           case (None, _) => env
           case _ => err(TUndefined, e1)
         }
@@ -248,20 +257,11 @@ object Lab5 extends jsy.util.JsyApplication with Lab5Like {
         val t1 = typeof(env2, e1)
         // Match on whether the return type is specified.
         tann match {
-          case None => TFunction(params, t1)
+          case None => TFunction(params, t1)   // TypeFunctionAnn
           case Some(tret) => if(TFunction(params,t1) == TFunction(params,tret)) TFunction(params, t1) else err(TFunction(params, tret), e1)
         }
       }
-
-      case Call(e1, args) => typeof(env, e1) match {
-        case TFunction(params, tret) if (params.length == args.length) => {
-          (params zip args).foreach {
-            case ((_, MTyp(_, t)), arg) => if (t != typeof(env, arg)) err(typeof(env, arg), arg) // check that they are equal types (otherwise there is an error)
-          }
-          tret
-        }
-        case tgot => err(tgot, e1)
-      }
+        // TypeVall
       case Call(e1, args) => typeof(env, e1) match {
         case TFunction(params, tret) if (params.length == args.length) =>
           (params, args).zipped.foreach {
@@ -273,15 +273,17 @@ object Lab5 extends jsy.util.JsyApplication with Lab5Like {
       }
 
         /***** New cases for Lab 5. ***/
-      case Assign(Var(x), e1) => env(x) match {
-        case MTyp(m,t) => m match {
+        // TypeAssignVar
+      case Assign(Var(x), e1) => env get x match {
+        case Some(MTyp(m,t))=> m match {
           case (MVar | MRef) => typeof(env, e1) match {
             case tgot => if (tgot == t) t else err(tgot, e1)
           }
           case _ => err(t, e)
         }
-        case _  => ???
+        case None => err(typeof(env,e1), e1)
       }
+        // TypeAssignField
       case Assign(GetField(e1, f), e2) => typeof(env, e1) match {
         case TObj(fields) => val t1 = fields(f); if (t1 == typeof(env,e2)) t1 else err(t1, e1)
         case tgot => err(tgot, e1)
@@ -289,10 +291,10 @@ object Lab5 extends jsy.util.JsyApplication with Lab5Like {
 
 
       case Assign(_, _) => err(TUndefined, e)
-
+      // TypeNull
       case Null =>
         TNull // base case
-
+      // TypeCast
       case Unary(Cast(t), e1) => typeof(env, e1) match {
         case tgot if castOk(tgot, t) => t
         case tgot => err(tgot, e1)
